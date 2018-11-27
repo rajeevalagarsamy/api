@@ -1,0 +1,20 @@
+#%RAML 1.0
+baseUri: https://mocksvc.mulesoft.com/mocks/ddd473f9-f506-4b0f-b65f-d9265350b5cc # 
+
+
+version: v1
+title: mule-application-cicd-flow
+
+
+traits: 
+  client-id-enf : !include traits/trait-api-security.raml
+
+/test:
+  description: this api is for cicd testing 
+  get:
+    is: [client-id-enf]
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: {"Response":"CICD Test Successful"}
