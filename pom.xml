@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
-	<artifactId>mule-application-cicd-flow</artifactId>
+	<artifactId>template-api</artifactId>
     <version>1.0.0</version>
     <packaging>${packaging}</packaging>
 	
-	<name>mule-application-cicd-flow</name>
+	<name>template-api</name>
 
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
