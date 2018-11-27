@@ -6,7 +6,7 @@
 	<artifactId>mule-application-cicd-flow</artifactId>
     <version>1.0.0</version>
     <packaging>${packaging}</packaging>
-	<!--test -->
+	
 	<name>mule-application-cicd-flow</name>
 
     <properties>
