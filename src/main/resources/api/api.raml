@@ -1,0 +1,13 @@
+#%RAML 1.0
+version: v1
+baseUri: https://mocksvc.mulesoft.com/mocks/4f52da8a-dd3c-4aa6-994a-65d5278633ce # 
+title: mule-regions-cicd-demo
+
+/test:
+  description: test api for cicd
+  get:
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: { "Response" : "CICD Test Successful" }
