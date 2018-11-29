@@ -6,7 +6,7 @@
 	<artifactId>${artifact}</artifactId>
     <version>1.0.${bn}</version>
     <packaging>${packaging}</packaging>
-
+	<!-- test -->
 	<name>${artifact}</name>
 
     <properties>
