@@ -4,7 +4,7 @@
 
     <groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
     <artifactId>mule-proxy-template</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 
     <packaging>${packaging}</packaging>
     <name>mule-proxy-template</name>
