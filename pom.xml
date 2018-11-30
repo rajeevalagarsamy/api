@@ -61,7 +61,7 @@
 									<goal>execute</goal>
 								</goals>
 								<configuration>
-									<source>${project.basedir}/src/main/scripts/api-manager-provision.groovy</source>
+									<source>${project.basedir}\src\main\scripts\api-manager-provision.groovy</source>
 								</configuration>
 							</execution>
 						</executions>
