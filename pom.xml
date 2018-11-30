@@ -112,6 +112,12 @@
 									<anypoint.platform.client_secret>${secret}</anypoint.platform.client_secret>
 									<anypoint.platform.base_uri>https://anypoint.mulesoft.com</anypoint.platform.base_uri>
 									<anypoint.platform.analytics_base_uri>https://analytics-ingest.anypoint.mulesoft.com</anypoint.platform.analytics_base_uri>
+									<proxy.path>${proxyPath}</proxy.path>
+									<proxy.port>${proxyPort}</proxy.port>
+									<proxy.responseTimeout>${proxyTimeout}</proxy.responseTimeout>
+									<implementation.host>${implHost}</implementation.host>
+									<implementation.port>${implPort}</implementation.port>
+									<implementation.path>${implPath}</implementation.path>
 								</properties>
 					            <deploymentSettings>
 					                <cpuReserved>${cpu}</cpuReserved>
