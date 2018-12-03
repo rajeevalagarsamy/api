@@ -1,0 +1,13 @@
+{
+  "BPMSJSTI": {
+    "bpmstrequest": {
+      "bpmst_txn": "BP2L",
+      "bpmst_operator_id": "A015533",
+      "bpmst_process_code": "IQTX  ",
+      "bpmst_tax_id": 428394440,
+      "bpmst_customer_bank_no": "001",
+      "bpmst_pers_bus_code": "P",
+      "bpmst_sales_svcs_flag": "Y"
+    }
+  }
+}

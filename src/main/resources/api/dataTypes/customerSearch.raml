@@ -1,0 +1,151 @@
+#%RAML 1.0 DataType
+
+type: object
+properties:
+  acceptReject:
+    displayName: Accept_Reject
+    type: string
+    required: true
+    maxLength: 1
+    example : A
+  responseCode:
+    displayName: Response Code 
+    type: string
+    required: true
+    maxLength: 8
+    example : Success
+  numberSent:
+    displayName: Number Sent
+    type: integer
+    required: true
+    minimum: 00
+    maximum: 99
+    example: 2
+  ricfCustomerNumber:
+    displayName: RICF Customer Number
+    type: integer
+    required: true
+    minimum: 0000000000000
+    maximum: 9999999999999
+    example : 787866656
+  customerName:
+    displayName: Customer Name
+    type: string
+    required: true
+    maxLength: 40
+    example : John Doe
+  tieBreaker:
+    displayName: Tie Breaker
+    type: integer
+    required: true
+    minimum: 000
+    maximum: 999
+    example : 123
+  addressLine1:
+    displayName: Address Line 1
+    type: string 
+    required: true
+    maxLength: 40
+    example : 2121 Warm Springs Rd 
+  addressLine2:
+    displayName: Address Line 2
+    type: string 
+    required: true
+    maxLength: 40
+    example : Suite 2500
+  addressLine3:
+    displayName: Address Line 3
+    type: string 
+    required: true
+    maxLength: 40
+    example :  Building 22
+  city:
+    displayName: City
+    type: string 
+    required: true
+    maxLength: 35
+    example : Jersey City
+  state:
+    displayName: State
+    type: string 
+    required: true
+    maxLength: 2
+    example : NJ
+  zip:
+    displayName: Zip
+    type: integer 
+    required: true
+    minimum: 00000
+    maximum: 9999999999
+    example : 07306
+  tin:
+    displayName: TIN
+    type: integer 
+    required: true
+    minimum: 000000000
+    maximum: 999999999
+    example : 183456798
+  relationship:
+    displayName: Relationship
+    type: string 
+    required: true
+    maxLength: 3
+    example : EMP
+  personalBusiness:
+    displayName: Personal/Business
+    type: string 
+    required: true
+    maxLength: 1
+    example : P
+  crfStatus:
+    displayName: CRF Status
+    type: string
+    maxLength: 2
+    example: E0
+  originalSearchName:
+    displayName: Original Search Name
+    type: string
+    maxLength: 40
+    example: John Doe
+  matchCode:
+    displayName: Match Code
+    type: string
+    maxLength: 2
+    example: ER
+  accountNumber:
+    displayName: Account Number
+    type: string
+    maxLength: 18
+    example: ES9989899999
+  application:
+    displayName: Application
+    type: string
+    maxLength: 3
+    example: ESS
+  bankNumber:
+    displayName: Bank Number
+    type: string
+    maxLength: 3
+    example: AL2
+  moreCustomersAvailable:
+    displayName: More Customers Available
+    type: string
+    maxLength: 1
+    example: N
+  availableFilter:
+    displayName: Available Filter
+    type: string
+    maxLength: 2
+    example: EE
+  genderCode:
+    displayName: Gender Code
+    type: string
+    maxLength: 1
+    example: M
+  dateOfBirth:
+    displayName: Birth Date
+    type: integer 
+    maximum: 99999999
+    minimum: 00000000
+    example : 20150819
+

@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+
+    <apikit:config name="api-config" raml="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="api-main">
+        <http:listener config-ref="api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="8dbf7a15-6c27-42b5-949a-544ee31bb866">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="api-console">
+        <http:listener config-ref="api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\customer\profile\accountNumber:api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  customerSearch: [
+    {
+      acceptReject: "A",
+      responseCode: "Success",
+      numberSent: 2,
+      ricfCustomerNumber: 787866656,
+      customerName: "John Doe",
+      tieBreaker: 123,
+      addressLine1: "2121 Warm Springs Rd",
+      addressLine2: "Suite 2500",
+      addressLine3: "Building 22",
+      city: "Jersey City",
+      state: "NJ",
+      zip: "07306",
+      tin: 183456798,
+      relationship: "EMP",
+      personalBusiness: "P",
+      crfStatus: "E0",
+      originalSearchName: "John Doe",
+      matchCode: "ER",
+      accountNumber: "ES9989899999",
+      application: "ESS",
+      bankNumber: "AL2",
+      moreCustomersAvailable: "N",
+      availableFilter: "EE",
+      genderCode: "M",
+      dateOfBirth: 19760918
+    }, 
+    {
+      acceptReject: "A",
+      responseCode: "Success",
+      numberSent: 2,
+      ricfCustomerNumber: 787861234,
+      customerName: "John Doe",
+      tieBreaker: 321,
+      addressLine1: "180 W Flamingo Rd",
+      addressLine2: "Suite 1800",
+      addressLine3: "Building 14",
+      city: "Las Vegas",
+      state: "NJ",
+      zip: "89119",
+      tin: 183457676,
+      relationship: "EMP",
+      personalBusiness: "P",
+      crfStatus: "E0",
+      originalSearchName: "Sean Kieth",
+      matchCode: "ER",
+      accountNumber: "ES998986666",
+      application: "ES1",
+      bankNumber: "AL2",
+      moreCustomersAvailable: "N",
+      availableFilter: "EE",
+      genderCode: "M",
+      dateOfBirth: 19820201
+    }
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\customer\profile\name:api-config">
+		<flow-ref doc:name="name" doc:id="b9862be4-170d-4b86-9cbc-f42d6dace2c3" name="name"/>
+    </flow>
+    <flow name="get:\customer\profile\rcifNumber:api-config">
+		<flow-ref doc:name="rcif" doc:id="1d7856f1-3dab-4f04-88f4-01fd45c0866f" name="rcif"/>
+    </flow>
+    <flow name="get:\customer\profile\sysId:api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  customerProfile: {
+    acceptReject: "A",
+    responseCode: "Success",
+    customerName: "John Doe",
+    customerRcifTieBreaker: 123,
+    customerAddressLine1: "2121 Warm Springs Rd",
+    customerAddressLine2: "Suite 2500",
+    customerAddressLine3: "Building 22",
+    customerCity: "Jersey City",
+    state: "NJ",
+    zip: 7306,
+    addressCorrectionCode: "N",
+    customerForeignMailCodeFlag: "Y",
+    taxId: 183456798,
+    customerLvlComment1: "some text description",
+    customerLvlComment2: "some text description",
+    customerDescriptionCodes: [
+      {
+        descriptionCode: 302
+      }, 
+      {
+        descriptionCode: 708
+      }, 
+      {
+        descriptionCode: 501
+      }, 
+      {
+        descriptionCode: 888
+      }, 
+      {
+        descriptionCode: 230
+      }
+    ],
+    birthDate: "2015-08-19T00:00:00Z",
+    crfStatus: "YS",
+    customerFirstName: "John",
+    customerMiddleName: "NA",
+    customerLastName: "Doe",
+    genderCode: "M",
+    premierSourceCode: "TR013",
+    chargeoffFoundIndicator: "N",
+    privacyCode: "A",
+    customerId1IssueDate: "2015-08-19T15:10:16Z",
+    customerId1ExpirationDate: "2015-08-19T15:10:16Z",
+    customerId1State: "NJ",
+    customerId1DriversLicenseNbr: "A132178910146187",
+    customerId1Type: "LICN",
+    customerId2IssueDate: "2015-08-19T15:10:16Z",
+    customerId2ExpirationDate: "2015-08-19T15:10:16Z",
+    customerId2IssueCountry: "US",
+    customerId2Number: "F331232",
+    customerId2Type: "PASP",
+    secondaryIdIssuer: "DHS",
+    countryOfCitizenship: "US",
+    citizenForeignEntity: "N",
+    firstContactDate: "2015-08-19T15:10:16Z",
+    lastMaintenanceDate: "2015-08-19T15:10:16Z",
+    dateOfDeath: "2015-08-19T15:10:16Z",
+    countryOfBirth: "US",
+    ibn: "GAD12346",
+    employer: "Regions Bank",
+    employmentDate: "2015-08-19T15:10:16Z",
+    employmentStatusCode: "I",
+    employmentAddressLine1: "15000 Summit Tower Blvd",
+    employmentAddressLine2: "Suite 2300",
+    employmentAddressLine3: "Building 89",
+    employerCityCountry: "Birmingham Unites States",
+    employerState: "AL",
+    employeeZip: "USAL66457",
+    employeeForeignMailCodeFlag: "N",
+    occupationCode: "Z056",
+    studentStatus: "N",
+    studentSchoolName: "Texas University",
+    ownRentCode: "R",
+    privateWealthCode: "R",
+    wealthSourceCode: "X",
+    wealthSourceDescription: "Salary , Investment , Trades",
+    referralCode: "O",
+    customerEmailAddressInfo: [
+      {
+        emailAddress: "office@gmail.com",
+        emailType: "O",
+        emailRestrict1Flag: "Y",
+        emailRestrict2Flag: "N"
+      }, 
+      {
+        emailAddress: "personal@gmail.com",
+        emailType: "P",
+        emailRestrict1Flag: "Y",
+        emailRestrict2Flag: "N"
+      }
+    ],
+    customerPhoneNumberInfo: [
+      {
+        phoneNumber: "7022018879",
+        prefix: 1,
+        extension: 40504,
+        primaryFlag: "N",
+        customerReference: 12356789,
+        bestTimeToCall: "Y",
+        deviceType: "S",
+        smsTextFlag: "Y",
+        faxFlag: "N",
+        teleUseRest1Flag: "N",
+        teleUseRest2Flag: "N"
+      }, 
+      {
+        phoneNumber: "7028891342",
+        prefix: 1,
+        extension: 2323,
+        primaryFlag: "Y",
+        customerReference: 12356789,
+        bestTimeToCall: "Y",
+        deviceType: "L",
+        smsTextFlag: "N",
+        faxFlag: "N",
+        teleUseRest1Flag: "Y",
+        teleUseRest2Flag: "N"
+      }
+    ],
+    dualCitizenCountry: "IN",
+    visaType: "L1B ICT",
+    residencyApplication: "N",
+    countryOfResidence: "USA",
+    nraSavingsCode: "V",
+    nraExpenseCode: "Z",
+    nraDepositCode: "T",
+    nraTravelCode: "G",
+    nraOtherRequirements: "H",
+    nraOtherRequirementsDesc: "Some description on NRA",
+    nraPresenceCode: "K",
+    nraPresenceDesc: "Out of country",
+    nraStayCode: "U",
+    studentSupportCode: "Y",
+    studentSupportDesc: "Some description on Student support procedures",
+    pepIndicator: "C",
+    pepStatus: "A",
+    pepRelationship: "D",
+    pepPosition: "Some description on PEP Position",
+    pepCountry: "USA",
+    accessCheckCardFlag: "Y",
+    accessChecksFlag: "Y",
+    accessOnlineBankingFlag: "Y",
+    accessWireTransferFlag: "N",
+    accessDepositCaptrueFlag: "N",
+    accessCashFlag: "N",
+    monthlyCashDepositCode: "D",
+    monthlyCashWithdrawalCode: "E",
+    wireTransferCode: "L",
+    wireTransferCountry: [
+      "IND", 
+      "USA", 
+      "AUS", 
+      "UK", 
+      "CAN"
+    ],
+    wireInCode: "I",
+    wireOutCode: "O",
+    cifNumber: "CV12345A12",
+    occupationOtherDesc: "Some description on the Occupation",
+    cddRiskSide: "X",
+    businessOwnerIdInfo: [
+      {
+        businessOwnerIdType: "DCVR",
+        businessOwnerIdIssuer: "Some description on the Issuer",
+        businessOwnerIdNumber: "112ASCDF1233444",
+        businessOwnerIdIssueDate: "20180930",
+        businessOwnerIdExpDate: "20210930"
+      }, 
+      {
+        businessOwnerIdType: "A123",
+        businessOwnerIdIssuer: "Some description on the Issuer",
+        businessOwnerIdNumber: "11223455343444",
+        businessOwnerIdIssueDate: "20181230",
+        businessOwnerIdExpDate: "20211230"
+      }
+    ],
+    customerNameSuffix: "Jr"
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\customer\profile\tin:api-config">
+		<flow-ref doc:name="tin" doc:id="bbaa2445-096d-4e23-949c-34dd0e3b2326" name="tin"/>
+    </flow>
+</mule>
