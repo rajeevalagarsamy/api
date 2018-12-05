@@ -85,7 +85,7 @@
 								<muleVersion>${app.runtime}</muleVersion>
 								<username>${user}</username>
 								<password>${password}</password>
-								<applicationName>${application}</applicationName>
+								<applicationName>${application}-${version}</applicationName>
 								<provider>${provider}</provider>
 								<properties>
 									<env>${env}</env>
@@ -98,7 +98,7 @@
 								<deploymentSettings>
 									<cpuReserved>${cpu}</cpuReserved>
 									<memoryReserved>${memory}</memoryReserved> 
-									<publicUrl>https://${application}.${domainName}</publicUrl>
+									<publicUrl>https://${application}-${version}.${domainName}</publicUrl>
 									<replicationFactor>${replicationFactor}</replicationFactor>
 									<clusteringEnabled>${clusteringEnabled}</clusteringEnabled>
 								</deploymentSettings>
