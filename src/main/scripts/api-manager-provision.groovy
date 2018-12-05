@@ -100,9 +100,11 @@ class CICDUtil
                      'apiImplUri':System.properties.'apiImplUri',
                      'apiProxyUri':System.properties.'apiProxyUri',
                      'isCloudHub':System.properties.'isCloudHub',
-                                          'apiType':System.properties.'apiType',
+                     'apiType':System.properties.'apiType',
                      'deploymentType':System.properties.'deploymentType', 
-                     'apiInstanceLabel':System.properties.'apiInstanceLabel'
+                     'apiInstanceLabel':System.properties.'apiInstanceLabel',
+					 'isHA':System.properties.'isHA',
+					 'clusterName':System.properties.'clusterName
                      ]
 
         log(DEBUG,  "props->" + props)
@@ -232,7 +234,7 @@ class CICDUtil
                 
                 log(INFO, it)
                 
-                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.version == props.assetVersion )
+                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.version == props.assetVersion && ( props.isHA == "false" || it.name == props.clusterName ) )
                 
                   {
                     
