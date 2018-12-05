@@ -4,7 +4,7 @@
 
 	<groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
 	<artifactId>mule-application-template-cicd</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>${packaging}</packaging>
 
 	<name>mule-application-template-cicd</name>

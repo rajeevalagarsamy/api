@@ -104,7 +104,7 @@ class CICDUtil
                      'deploymentType':System.properties.'deploymentType', 
                      'apiInstanceLabel':System.properties.'apiInstanceLabel',
 					 'isHA':System.properties.'isHA',
-					 'clusterName':System.properties.'clusterName
+					 'clusterName':System.properties.'clusterName'
                      ]
 
         log(DEBUG,  "props->" + props)
