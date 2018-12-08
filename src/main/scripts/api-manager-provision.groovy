@@ -47,8 +47,7 @@ class CICDUtil
         def password=props.password 
 
         log(TRACE, "username=" + username)
-        log(TRACE, "password=" + password)
-
+       
         def urlString = "https://anypoint.mulesoft.com/accounts/login"
 
         def message = 'username='+username+'&password='+password
@@ -70,8 +69,6 @@ class CICDUtil
 
         def token = new JsonSlurper().parseText(response).access_token
 
-        log(INFO, "Bearer Token: ${token}")
-
         log(DEBUG,  "END getAnypointToken")
 
         return token
@@ -80,7 +77,7 @@ class CICDUtil
     
     def init ()
     {
-        
+
               
         def props = ['username':System.properties.'anypoint.user', 
                      'password': System.properties.'anypoint.password',
@@ -90,21 +87,16 @@ class CICDUtil
                      'assetId': System.properties.'assetId',
                      'assetVersion': System.properties.'assetVersion',
                      'path': System.getProperty("user.dir"),
-                     'clientIdEnforcementPolicy': System.properties.'clientIdEnforcementPolicy',
-                     'rateLimitPolicy': System.properties.'rateLimitPolicy',
-                     'oAuthPolicy': System.properties.'oAuthPolicy',
-                     'timePeriod':System.properties.'timePeriod',
-                     'maxRequests':System.properties.'maxRequests',
-                     'scopes':System.properties.'scopes', 
-                     'tokenUrl':System.properties.'tokenUrl',
+                     'policy': System.properties.'policy',
                      'apiImplUri':System.properties.'apiImplUri',
                      'apiProxyUri':System.properties.'apiProxyUri',
                      'isCloudHub':System.properties.'isCloudHub',
                      'apiType':System.properties.'apiType',
                      'deploymentType':System.properties.'deploymentType', 
                      'apiInstanceLabel':System.properties.'apiInstanceLabel',
-					 'isHA':System.properties.'isHA',
-					 'clusterName':System.properties.'clusterName'
+                     'basicSlaMaxReq':System.properties.'basicSlaMaxReq',
+                     'goldSlaMaxReq':System.properties.'goldSlaMaxReq',
+                     'platinumSlaMaxReq':System.properties.'platinumSlaMaxReq'
                      ]
 
         log(DEBUG,  "props->" + props)
@@ -120,23 +112,19 @@ class CICDUtil
 
         def result = getAPIInstanceByExchangeAssetDetail(props, token, profileDetails);
         
-        if ( props.clientIdEnforcementPolicy == "true")
+        if ( props.policy == "sla" )
+
         {
-          def name = "clientIdEnforcementPolicy"
-          def policyDetails = applyPolicy (token, result.apiDiscoveryId , props , name ,profileDetails)
+            def tierBasic = applyTier(token, result.apiDiscoveryId , props , "basic" ,profileDetails) 
+            
+            def tierGold = applyTier(token, result.apiDiscoveryId , props , "gold" ,profileDetails) 
+            
+            def tierPlatinum = applyTier(token, result.apiDiscoveryId , props , "platinum" ,profileDetails) 
+            
+            def policyDetails = applyPolicy (token, result.apiDiscoveryId , props , "default" ,profileDetails)
         }
         
-        if ( props.rateLimitPolicy == "true")
-        {
-          def name = "rateLimitPolicy"
-          def policyDetails = applyPolicy (token, result.apiDiscoveryId , props , name , profileDetails)
-        }
-            
-        if ( props.oAuthPolicy == "true")
-        {
-          def name = "oAuthPolicy"
-          def policyDetails = applyPolicy (token, result.apiDiscoveryId , props , name , profileDetails)
-        }
+
         log(INFO, "apiInstance=" + result)
 
         return result
@@ -234,7 +222,7 @@ class CICDUtil
                 
                 log(INFO, it)
                 
-                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.version == props.assetVersion && ( props.isHA == "false" || it.name == props.clusterName ) )
+                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.version == props.assetVersion &&  it.name == props.apiInstanceLabel)
                 
                   {
                     
@@ -270,10 +258,76 @@ class CICDUtil
 
     }
     
+    def applyTier ( token , apiId , props , tname , profileDetails )
+    
+    {
+        log(DEBUG,  "START applyTier :" + tname);
+        
+        def basic = / { "status": "ACTIVE", "autoApprove": true, "limits": [{ "visible": true, "maximumRequests": 100, "timePeriodInMilliseconds": 3600000 } ], "name": "Basic", "description": "SLA Defenition for Basic Tier Plan" } /
+        def gold = / { "status": "ACTIVE", "autoApprove": false, "limits": [{ "visible": true, "maximumRequests": 100, "timePeriodInMilliseconds": 60000 } ], "name": "Gold", "description": "SLA Defenition for Gold Tier Plan" } / 
+        def platinum = / { "status": "ACTIVE", "autoApprove": false, "limits": [{ "visible": true, "maximumRequests": 100, "timePeriodInMilliseconds": 1000 } ], "name": "Platinum", "description": "SLA Defenition for Platinum Tier Plan" } / 
+        
+        def request = null
+        
+        if ( tname == "basic" )
+        {
+            request = new JsonSlurper().parseText(basic);
+            request.limits[0].maximumRequests = props.basicSlaMaxReq
+        } 
+        if ( tname == "gold" )
+        {
+            request = new JsonSlurper().parseText(gold);
+            request.limits[0].maximumRequests = props.goldSlaMaxReq
+        }
+        if ( tname == "platinum" )
+        {
+            request = new JsonSlurper().parseText(platinum);
+            request.limits[0].maximumRequests = props.platinumSlaMaxReq
+        }
+        
+        def message = JsonOutput.toJson(request)
+        
+        log(INFO, "applyTier request message for Tier : "+ tname + ", Message ->" + message);
+        
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/tiers"
+        
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token, "Accept": "application/json"]
+        
+        def connection = doRESTHTTPCall(urlString, "POST", message, headers)
+        
+        def response = null
+        
+        def tier = null 
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+            log(INFO, "the Tier: "+ tname + " is created successfully! statusCode=" + connection.responseCode)
+            response = "${connection.content}" 
+            tier = new JsonSlurper().parseText(response)
+            log(DEBUG, "Tier Details "+ tier )
+        }
+        else if ( connection.responseCode =~ '409') 
+        {
+            log(INFO, "The Tier: "+tname + " already exists , cannot overide ! statusCode=" + connection.responseCode)
+        }
+        
+        else
+        {
+            throw new Exception("Failed to create Tier: "+tname + "  ! statusCode=${connection.responseCode} responseMessage=${response}")
+        }
+        
+        log(DEBUG,  "END applyTier: "+tname)
+        
+        return tier
+        
+    }
+    
     def applyPolicy (token, apiId , props, name , profileDetails )
     {
         log(DEBUG,  "START applyPolicy :" + name);
-       
+        
+        def rateLimitSlaPolicy = / {"policyTemplateId": "307","groupId": "68ef9520-24e9-4cf2-b2f5-620025690913","assetId": "rate-limiting-sla-based","assetVersion": "1.1.1","configurationData": { "clientIdExpression": "#[attributes.headers['client_id']]", "clientSecretExpression": "#[attributes.headers['client_secret']]","clusterizable": true,"exposeHeaders": true },"pointcutData": null } /
+               
         def clientIdPolicy = /{"policyTemplateId": "294","groupId": "68ef9520-24e9-4cf2-b2f5-620025690913", "assetId": "client-id-enforcement", "assetVersion": "1.1.2", "configurationData": { "credentialsOriginHasHttpBasicAuthenticationHeader":"customExpression","clientIdExpression": "#[attributes.headers['client_id']]","clientSecretExpression": "#[attributes.headers['client_secret']]"}, "pointcutData":null}/ 
         
         def rateLimitPolicy = /{"policyTemplateId": "295","groupId": "68ef9520-24e9-4cf2-b2f5-620025690913","assetId": "rate-limiting","assetVersion": "1.2.1","configuration": {"rateLimits": [{"timePeriodInMilliseconds": null,"maximumRequests": null}], "clusterizable": true, "exposeHeaders": true},"pointcutData":null }/
@@ -299,6 +353,11 @@ class CICDUtil
            request = new JsonSlurper().parseText(oauthPolicy); 
           request.configuration.scopes = props.scopes
           request.configuration.tokenUrl = props.tokenUrl
+        }
+        
+        if ( name == "default" )
+        {  
+           request = new JsonSlurper().parseText(rateLimitSlaPolicy); 
         }
         
         def message = JsonOutput.toJson(request)
@@ -470,7 +529,7 @@ class CICDUtil
           def result = util.provisionAPIManager(props);
          
       
-         util.persisteAPIDiscoveryDetail(props, result)
+        util.persisteAPIDiscoveryDetail(props, result)
           
          
 
