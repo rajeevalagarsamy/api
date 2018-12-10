@@ -92,6 +92,7 @@
 								<ignoreFlows>
 									<ignoreFlow>api-main</ignoreFlow>
 									<ignoreFlow>api-console</ignoreFlow>
+									<ignoreFlow>get:\test:api-config</ignoreFlow>
 								</ignoreFlows>
 								<failBuild>true</failBuild>
 								<requiredApplicationCoverage>${appCoverage}</requiredApplicationCoverage>
