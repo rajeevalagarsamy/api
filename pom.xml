@@ -94,7 +94,7 @@
 									<ignoreFlow>api-console</ignoreFlow>
 								</ignoreFlows>
 								<failBuild>true</failBuild>
-								<requiredApplicationCoverage>${bamboo.app.coverage}</requiredApplicationCoverage>
+								<requiredApplicationCoverage>${appCoverage}</requiredApplicationCoverage>
 							</coverage>
 						</configuration>
 					</plugin>
