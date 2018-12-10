@@ -48,7 +48,46 @@
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<groupId>com.mulesoft.munit.tools</groupId>
+						<artifactId>munit-maven-plugin</artifactId>
+						<version>${munit.version}</version>
+						<executions>
+							<execution>
+								<id>test</id>
+								<phase>test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<!-- <munitTest>api-test-suite.xml</munitTest>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile> -->
+							<coverage>
+								<runCoverage>true</runCoverage>
+								<formats>
+									<format>html</format>
+									<format>json</format>
+								</formats>
+								<!-- <ignoreFlows>
+									<ignoreFlow>api-console</ignoreFlow>
+									<ignoreFlow>api-main</ignoreFlow>
+								</ignoreFlows> -->
+								<failBuild>false</failBuild>
+								<requiredApplicationCoverage>0</requiredApplicationCoverage>
+							</coverage>
+						</configuration>
+					</plugin>
 				</plugins>
+				<testResources>
+					<testResource>
+						<directory>src/test/munit</directory>
+					</testResource>
+					<testResource>
+						<directory>src/test/resources</directory>
+					</testResource>
+				</testResources>
 			</build>
 		</profile>
 	
@@ -64,7 +103,9 @@
 						<configuration>
 						</configuration>
 					</plugin>
+					
 				</plugins>
+				
 			</build>
 		</profile>
 		<profile>
@@ -128,6 +169,26 @@
             <artifactId>mule-apikit-module</artifactId>
             <version>1.1.9</version>
             <classifier>mule-plugin</classifier>
+        </dependency>
+		    	<dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>munit-runner</artifactId>
+            <version>2.1.4</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>	
+        <dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>munit-tools</artifactId>
+            <version>2.1.4</version>
+            <classifier>mule-plugin</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mulesoft.munit</groupId>
+            <artifactId>mule-munit-support</artifactId>
+            <version>3.9.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
