@@ -177,12 +177,6 @@
             <classifier>mule-plugin</classifier>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.mulesoft.munit</groupId>
-            <artifactId>mule-munit-support</artifactId>
-            <version>3.9.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 	<repositories>
