@@ -68,46 +68,8 @@
 						<configuration>
 						</configuration>
 					</plugin>
-					<plugin>
-						<groupId>com.mulesoft.munit.tools</groupId>
-						<artifactId>munit-maven-plugin</artifactId>
-						<version>${munit.version}</version>
-						<executions>
-							<execution>
-								<id>test</id>
-								<phase>test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<!-- <munitTest>api-test-suite.xml</munitTest>
-							<redirectTestOutputToFile>true</redirectTestOutputToFile> -->
-							<coverage>
-								<runCoverage>true</runCoverage>
-								<formats>
-									<format>html</format>
-									<format>json</format>
-								</formats>
-								<!-- <ignoreFlows>
-									<ignoreFlow>api-console</ignoreFlow>
-									<ignoreFlow>api-main</ignoreFlow>
-								</ignoreFlows> -->
-								<failBuild>true</failBuild>
-								<requiredApplicationCoverage>100</requiredApplicationCoverage>
-							</coverage>
-						</configuration>
-					</plugin>
 				</plugins>
 				<testResources>
-					<testResource>
-						<directory>src/test/munit</directory>
-					</testResource>
-					<testResource>
-						<directory>src/test/resources</directory>
-					</testResource>
-				</testResources>
 			</build>
 		</profile>
 		<profile>
