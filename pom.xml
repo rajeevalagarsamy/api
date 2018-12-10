@@ -75,7 +75,7 @@
 									<ignoreFlow>api-main</ignoreFlow>
 								</ignoreFlows> -->
 								<failBuild>false</failBuild>
-								<requiredApplicationCoverage>0</requiredApplicationCoverage>
+								<requiredApplicationCoverage>100</requiredApplicationCoverage>
 							</coverage>
 						</configuration>
 					</plugin>
