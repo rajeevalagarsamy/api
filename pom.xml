@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
-	<artifactId>mule-application-template-cicd</artifactId>
+	<artifactId>test-deployment-issue-app</artifactId>
     <version>1.0.4</version>
     <packaging>${packaging}</packaging>
 
-	<name>mule-application-template-cicd</name>
+	<name>test-deployment-issue-app</name>
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
