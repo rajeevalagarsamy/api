@@ -89,13 +89,13 @@
 									<format>json</format>
 									<format>console</format>
 								</formats>
-								<ignoreFlows>
+								<!-- <ignoreFlows>
 									<ignoreFlow>api-main</ignoreFlow>
 									<ignoreFlow>api-console</ignoreFlow>
 									<ignoreFlow>get:\test:api-config</ignoreFlow>
 									<ignoreFlow>get:\test1:api-config</ignoreFlow>
 									<ignoreFlow>get:\addRevision:api-config</ignoreFlow>
-								</ignoreFlows>
+								</ignoreFlows> -->
 								<failBuild>true</failBuild>
 								<requiredApplicationCoverage>${appCoverage}</requiredApplicationCoverage>
 							</coverage>
