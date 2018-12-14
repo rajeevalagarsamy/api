@@ -14,7 +14,7 @@
 			<flow-ref doc:name="Flow-ref to test" doc:id="48e5b590-5c2f-49b9-93a7-2752fc179981" name="test"/>
 		</munit:execution>
 		<munit:validation >
-			<munit-tools:assert-that doc:name="Assert that" doc:id="b83ea47e-c209-45bb-aa1b-9957d85280dd" expression="#[payload]" is="#[MunitTools::notNullValue()]" message="The Status is Null"/>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b83ea47e-c209-45bb-aa1b-9957d85280dd" expression="#[payload]" is="#[MunitTools::isEmptyOrNullString()]" message="The Status is Null"/>
 		</munit:validation>
 	</munit:test>
 
