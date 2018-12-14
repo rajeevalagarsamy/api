@@ -96,7 +96,7 @@
 									<ignoreFlow>get:\test1:api-config</ignoreFlow>
 									<ignoreFlow>get:\addRevision:api-config</ignoreFlow>
 								</ignoreFlows>
-								<failBuild>true</failBuild>
+								<failBuild>false</failBuild>
 								<requiredApplicationCoverage>${appCoverage}</requiredApplicationCoverage>
 							</coverage>
 						</configuration>
@@ -123,7 +123,6 @@
 								<password>${password}</password>
 								<applicationName>${application}-${version}</applicationName>
 								<provider>${provider}</provider>
-								<skipDeploymentVerification>true</skipDeploymentVerification>
 								<properties>
 									<env>${env}</env>
 									<api.id>${apiId}</api.id>
