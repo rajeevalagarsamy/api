@@ -51,7 +51,7 @@ class CICDUtil
         def urlString = "https://anypoint.mulesoft.com/accounts/login"
 
         def message = 'username='+username+'&password='+password
-
+        
         def headers=["Content-Type":"application/x-www-form-urlencoded", "Accept": "application/json"]
 
         def connection = doRESTHTTPCall(urlString, "POST", message, headers)
@@ -78,8 +78,9 @@ class CICDUtil
     def init ()
     {
 
+
               
-        def props = ['username':System.properties.'anypoint.user', 
+        def props = ['username':System.properties.'anypoint.username', 
                      'password': System.properties.'anypoint.password',
                      'orgId': System.properties.'orgId',
                      'version': System.properties.'version',
@@ -134,10 +135,10 @@ class CICDUtil
     {
         log(DEBUG,  "START getProfile")
         
-        def orgId = null
+        def orgId = props.orgId
         def envId = null
         
-        def urlString = "https://anypoint.mulesoft.com/accounts/api/profile"
+        def urlString = "https://anypoint.mulesoft.com/accounts/api/organizations/"+props.orgId+"/environments"
         
         def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token, "Accept": "application/json"]
         
@@ -151,14 +152,12 @@ class CICDUtil
         if (connection.responseCode == 200)
             {
             
-                log(INFO, " getProfile is successfull! statusCode=" + connection.responseCode)
+                log(INFO, " getEnv is successfull! statusCode=" + connection.responseCode)
                 response = "${connection.content}"
                 profDet = new JsonSlurper().parseText(response)
                 //log(INFO, " Profile Details : " + profDet )
-                
-                orgId = profDet.organization.id
-                
-                allEnvIns = profDet.organization.environments
+                                               
+                allEnvIns = profDet.data
                 
                 allEnvIns.each {    
                 
@@ -176,7 +175,7 @@ class CICDUtil
         else
             {
             
-                throw new Exception("Failed to get the profile statusCode=${connection.responseCode} responseMessage=${response}")
+                throw new Exception("Failed to get the Env statusCode=${connection.responseCode} responseMessage=${response}")
             
             }
             
