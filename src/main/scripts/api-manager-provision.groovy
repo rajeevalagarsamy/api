@@ -4,6 +4,7 @@ import groovyx.net.http.*
 import groovyx.net.http.ContentType.*
 import groovyx.net.http.Method.*
 
+
 class CICDUtil
 {
     static def int WARN=1;
@@ -78,7 +79,7 @@ class CICDUtil
     def init ()
     {
 
-
+ 
               
         def props = ['username':System.properties.'anypoint.username', 
                      'password': System.properties.'anypoint.password',
@@ -97,7 +98,8 @@ class CICDUtil
                      'apiInstanceLabel':System.properties.'apiInstanceLabel',
                      'basicSlaMaxReq':System.properties.'basicSlaMaxReq',
                      'goldSlaMaxReq':System.properties.'goldSlaMaxReq',
-                     'platinumSlaMaxReq':System.properties.'platinumSlaMaxReq'
+                     'platinumSlaMaxReq':System.properties.'platinumSlaMaxReq',
+                     'previousAssetVersion':System.properties.'previousAssetVersion'
                      ]
 
         log(DEBUG,  "props->" + props)
@@ -113,17 +115,81 @@ class CICDUtil
 
         def result = getAPIInstanceByExchangeAssetDetail(props, token, profileDetails);
         
+        def tierBasic
+        def tierGold
+        def tierPlatinum
+        
         if ( props.policy == "sla" )
 
         {
-            def tierBasic = applyTier(token, result.apiDiscoveryId , props , "basic" ,profileDetails) 
+            tierBasic = applyTier(token, result.apiDiscoveryId , props , "basic" ,profileDetails) 
             
-            def tierGold = applyTier(token, result.apiDiscoveryId , props , "gold" ,profileDetails) 
+            tierGold = applyTier(token, result.apiDiscoveryId , props , "gold" ,profileDetails) 
             
-            def tierPlatinum = applyTier(token, result.apiDiscoveryId , props , "platinum" ,profileDetails) 
+            tierPlatinum = applyTier(token, result.apiDiscoveryId , props , "platinum" ,profileDetails) 
             
             def policyDetails = applyPolicy (token, result.apiDiscoveryId , props , "default" ,profileDetails)
+            
+            //tierIds = ["basic": tierBasic.id, "gold": tierGold.id, "platinum": tierPlatinum.id ]
+            
+           // log ( INFO , "Tier Codes : "+ tierIds)
+           
         }
+        
+        if ( result.apiVerChange == "true" )
+        
+        {
+        
+            def cntrs = getContracts ( token , props , profileDetails , result.oldApiId  )
+            def cntrs1 = getContracts ( token , props , profileDetails , result.apiDiscoveryId  )
+            
+            log(INFO, " Old API Contracts " + cntrs ) 
+            log(INFO, " New API Contracts " + cntrs1 )    
+
+            
+            if ( cntrs.total > 0 && cntrs1.total == 0 )
+            
+            {
+               cntrs.contracts.each {
+            
+                        log(INFO, it)
+                        
+                        def tierId 
+                        def tierName
+                        
+                        if ( it.status == "APPROVED" )
+                        {
+                            tierName = it.tier.name
+                        }
+                        else {
+                            tierName = it.requestedTier.name
+                        }
+                        
+                        if ( tierName == "Basic" )
+                        {
+                            tierId = tierBasic.id
+                        }
+                        if ( tierName == "Gold" )
+                        {
+                            tierId = tierGold.id
+                        }
+                        if ( tierName == "Platinum" )
+                        {
+                            tierId = tierPlatinum.id
+                        }
+                
+                        def pc = postContract ( token , props , profileDetails , result.apiDiscoveryId , it.applicationId , tierId )
+                  }                       
+            
+            }
+            else {
+                
+                log (INFO , " No contracts with OldApi" )
+            
+            }
+        
+        }
+        
         
 
         log(INFO, "apiInstance=" + result)
@@ -197,6 +263,8 @@ class CICDUtil
         def apiDiscoveryName
         def apiDiscoveryVersion
         def apiDiscoveryId
+        def oldApiId
+        def apiVerChange = "false"
         
         def urlString = "https://anypoint.mulesoft.com/exchange/api/v1/assets/"+profileDetails.orgId+"/"+props.assetId
 
@@ -217,13 +285,17 @@ class CICDUtil
 
             def allAPIInstances = new JsonSlurper().parseText(response).instances;
           
-            allAPIInstances.each{ 
+            allAPIInstances.each { 
                 
                 log(INFO, it)
                 
-                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.version == props.assetVersion &&  it.name == props.apiInstanceLabel)
+               
+                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version )
                 
-                  {
+                { 
+                   log(INFO, "Env and API Version Matched" )        
+                   
+                  if (it.version == props.assetVersion && it.name == props.apiInstanceLabel  ){
                     
                     apiInstance = it;
                     apiDiscoveryName = "groupId:"+profileDetails.orgId+":assetId:"+ props.assetId
@@ -232,6 +304,15 @@ class CICDUtil
                     
                     log ( INFO , "This API Instance matched with the ArtifactID , ArtifactVersion & APIVersion provided : " + apiInstance )
                   }
+                  else if ( it.version == props.previousAssetVersion )  {
+                    log(INFO, "Previous Asset Version Details Captured" )   
+                    apiVerChange = "true"
+                    oldApiId = it.id
+                  }
+                  
+                  
+                 
+                }
                 
             }
 
@@ -246,11 +327,13 @@ class CICDUtil
             apiDiscoveryName = apiInstance.autodiscoveryInstanceName
             apiDiscoveryVersion = apiInstance.productVersion
             apiDiscoveryId = apiInstance.id
+            
+           
          
         }
 
-        def result = ["apiInstance": apiInstance, "apiDiscoveryName": apiDiscoveryName, "apiDiscoveryVersion":apiDiscoveryVersion, "apiDiscoveryId": apiDiscoveryId]
-
+        def result = ["apiInstance": apiInstance, "apiDiscoveryName": apiDiscoveryName, "apiDiscoveryVersion":apiDiscoveryVersion, "apiDiscoveryId": apiDiscoveryId, "oldApiId": oldApiId, "apiVerChange": apiVerChange]
+        
         log(DEBUG,  "END getAPIInstanceByExchangeAssetDetail")
 
         return result
@@ -444,6 +527,8 @@ class CICDUtil
         if ( connection.responseCode =~ '2..') 
         {
             log(INFO, "the API instance is created successfully! statusCode=" + connection.responseCode)
+            
+            
         }
         else
         {
@@ -456,6 +541,70 @@ class CICDUtil
         log(DEBUG,  "END createAPIInstance")
 
         return apiInstance;
+    }
+    
+    
+    def postContract ( token , props , profileDetails , apiId , appId , tierId )
+    
+    {
+    
+        log ( INFO , " start Post Contracts " ) 
+        
+        def payload = / {"applicationId":0,"partyId":"","partyName":"","acceptedTerms":false,"requestedTierId":0}  / 
+        def request = new JsonSlurper().parseText(payload)
+        request.applicationId = appId
+        request.requestedTierId = tierId
+        def message = JsonOutput.toJson(request)
+        log(INFO, "PostContract request message=" + message)
+        
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts"
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
+        def connection = doRESTHTTPCall(urlString, "POST", message, headers)
+        def response = null
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+            response = "${connection.content}" 
+            log(INFO, " Contract : ${appId} Posted successfully. statusCode=${connection.responseCode} responseMessage=${response}")
+            
+        }
+        else {
+        
+            throw new Exception("Failed to post the contract : ${appId} ! statusCode=${connection.responseCode} responseMessage=${response}")
+        }
+        
+        log ( INFO , " end PostContract " ) 
+    }
+
+
+    def getContracts ( token , props , profileDetails , apiId  )
+    
+    {
+    
+        log ( INFO , " start Get Contracts " ) 
+        
+       
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts"
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token, "Accept":"application/json" ]
+        def connection = doRESTHTTPCall(urlString, "GET", null, headers)
+        def response = null
+        def contracts
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+            response = "${connection.content}" 
+            contracts = new JsonSlurper().parseText(response)
+            log(INFO, " GetContracts is successful. statusCode=${connection.responseCode} responseMessage=${contracts}")
+            
+        }
+        else {
+        
+            throw new Exception("Failed to get the contracts ! statusCode=${connection.responseCode} responseMessage=${contracts}")
+        }
+        
+        log ( INFO , " end Get Contracts " ) 
+        
+        return contracts
     }
 
     static def doRESTHTTPCall(urlString, method, payload, headers)
@@ -488,7 +637,14 @@ class CICDUtil
         {
             connection.setRequestMethod("GET")
         }
-
+        else if (method == "PATCH")
+        {
+            connection.setRequestMethod("PATCH")
+            def writer = new OutputStreamWriter(connection.outputStream)
+            writer.write(payload)
+            writer.flush()
+            writer.close()
+        }
         
         connection.connect();
         
