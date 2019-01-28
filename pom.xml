@@ -6,7 +6,7 @@
 	<artifactId>test-asset-version-app</artifactId>
     <version>1.0.0</version>
     <packaging>${packaging}</packaging>
-
+	<!-- test -->
 	<name>test-asset-version-app</name>
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
