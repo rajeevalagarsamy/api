@@ -79,7 +79,7 @@ class CICDUtil
     def init ()
     {
 
- 
+    
               
         def props = ['username':System.properties.'anypoint.username', 
                      'password': System.properties.'anypoint.password',
@@ -172,6 +172,7 @@ class CICDUtil
                         if ( tierName == "Gold" )
                         {
                             tierId = tierGold.id
+                            
                         }
                         if ( tierName == "Platinum" )
                         {
@@ -179,6 +180,21 @@ class CICDUtil
                         }
                 
                         def pc = postContract ( token , props , profileDetails , result.apiDiscoveryId , it.applicationId , tierId )
+                        
+                        if (  tierName == "Gold" || tierName == "Platinum"  )
+                        
+                        {
+                            def oldp =  /{"status":"REVOKED"}/ 
+                            def old = patchContract ( token , props , profileDetails , result.oldApiId , it.id , oldp )
+                            
+                            def newp =  /{"status":"APPROVED"}/ 
+                            def newcall = patchContract ( token , props , profileDetails , result.apiDiscoveryId , it.id ,newp )                            
+                        }
+                        
+                        
+                      //  def del = deleteContract ( token , props , profileDetails , apiId , id )
+                        
+                       
                   }                       
             
             }
@@ -577,6 +593,58 @@ class CICDUtil
     }
 
 
+
+    def patchContract ( token , props , profileDetails , apiId , contractId , payload )
+    
+    {
+    
+        log ( INFO , " start Patch Contracts " ) 
+        def request = new JsonSlurper().parseText(payload)
+        def message = JsonOutput.toJson(request)
+        log(INFO, "PostContract request message=" + message)
+        
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts/"+contractId
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
+        def connection = doRESTHTTPCall(urlString, "PATCH", message, headers)
+        
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+          log(INFO, " Contract Patched successfully. statusCode=${connection.responseCode}")
+            
+        }
+        else {
+        
+            throw new Exception("Failed to patch the contract : ${appId} ! statusCode=${connection.responseCode} ")
+        }
+        
+        log ( INFO , " end PatchContract " ) 
+    }
+    
+    def deleteContract ( token , props , profileDetails , apiId , contractId )
+    
+    {
+    
+        log ( INFO , " start Delete Contracts " ) 
+       
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts/"+contractId
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
+        def connection = doRESTHTTPCall(urlString, "DELETE", null, headers)
+        
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+          log(INFO, " Contract Deleted successfully. statusCode=${connection.responseCode}")
+            
+        }
+        else {
+        
+            throw new Exception("Failed to delete the contract : ${appId} ! statusCode=${connection.responseCode} ")
+        }
+        
+        log ( INFO , " end Delete Contract " ) 
+    }
+
     def getContracts ( token , props , profileDetails , apiId  )
     
     {
@@ -644,6 +712,10 @@ class CICDUtil
             writer.write(payload)
             writer.flush()
             writer.close()
+        }
+        else if (method == "DELETE")
+        {
+            connection.setRequestMethod("DELETE")
         }
         
         connection.connect();
