@@ -5,7 +5,7 @@ import groovyx.net.http.*
 import groovyx.net.http.ContentType.*
 import groovyx.net.http.Method.*
 import groovyx.net.http.RESTClient
-import org.apache.http.client.HttpClient
+//import org.apache.http.client.HttpClient
 
 class CICDUtil
 {
