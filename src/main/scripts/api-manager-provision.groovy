@@ -1,9 +1,11 @@
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput 
+@Grab( 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1' )
 import groovyx.net.http.*
 import groovyx.net.http.ContentType.*
 import groovyx.net.http.Method.*
-
+import groovyx.net.http.RESTClient
+import org.apache.http.client.HttpClient
 
 class CICDUtil
 {
@@ -79,7 +81,7 @@ class CICDUtil
     def init ()
     {
 
-    
+   
               
         def props = ['username':System.properties.'anypoint.username', 
                      'password': System.properties.'anypoint.password',
@@ -157,7 +159,7 @@ class CICDUtil
                         def tierId 
                         def tierName
                         
-                        if ( it.status == "APPROVED" )
+                        if ( it.status == "APPROVED" || it.status == "REVOKED" )
                         {
                             tierName = it.tier.name
                         }
@@ -181,21 +183,33 @@ class CICDUtil
                 
                         def pc = postContract ( token , props , profileDetails , result.apiDiscoveryId , it.applicationId , tierId )
                         
+                        log ( INFO , "Preparing for Patch call to Revoke the status  " )
+                        def payload = /{"status":"REVOKED"}/ 
+                        def pth = "/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId+"/apis/"+result.oldApiId+"/contracts/"+it.id
+                        
+                        patchCall ( token , payload , pth )
+                        def del = deleteContract ( token , props , profileDetails , result.oldApiId , it.id )
+                        
+                       
                         if (  tierName == "Gold" || tierName == "Platinum"  )
                         
                         {
-                            def oldp =  /{"status":"REVOKED"}/ 
-                            def old = patchContract ( token , props , profileDetails , result.oldApiId , it.id , oldp )
+                        
+                            log ( INFO , "Preparing for Patch call to Aprove the status  " )
                             
-                            def newp =  /{"status":"APPROVED"}/ 
-                            def newcall = patchContract ( token , props , profileDetails , result.apiDiscoveryId , it.id ,newp )                            
+                            payload = /{"status":"APPROVED"}/ 
+                            pth = "/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId+"/apis/"+result.apiDiscoveryId+"/contracts/"+pc.id
+                            patchCall ( token , payload , pth )
+                         
                         }
                         
                         
-                      //  def del = deleteContract ( token , props , profileDetails , apiId , id )
+                      
                         
                        
-                  }                       
+                  } 
+                  
+                  deleteApi ( token , profileDetails , result.oldApiId )                      
             
             }
             else {
@@ -564,7 +578,7 @@ class CICDUtil
     
     {
     
-        log ( INFO , " start Post Contracts " ) 
+        log ( INFO , " start Post Contracts : " +appId) 
         
         def payload = / {"applicationId":0,"partyId":"","partyName":"","acceptedTerms":false,"requestedTierId":0}  / 
         def request = new JsonSlurper().parseText(payload)
@@ -576,12 +590,13 @@ class CICDUtil
         def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts"
         def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
         def connection = doRESTHTTPCall(urlString, "POST", message, headers)
-        def response = null
-        
+        def response = "${connection.content}" 
+               
         if ( connection.responseCode =~ '2..') 
         {
-            response = "${connection.content}" 
-            log(INFO, " Contract : ${appId} Posted successfully. statusCode=${connection.responseCode} responseMessage=${response}")
+            
+            //contractId = new JsonSlurper().parseText(response).id
+            log(INFO, " Contract : Posted successfully. statusCode=${connection.responseCode}")
             
         }
         else {
@@ -589,36 +604,29 @@ class CICDUtil
             throw new Exception("Failed to post the contract : ${appId} ! statusCode=${connection.responseCode} responseMessage=${response}")
         }
         
-        log ( INFO , " end PostContract " ) 
+        def contract = new JsonSlurper().parseText(response)
+        log ( INFO , " end PostContract  : "+appId) 
+        return contract
     }
 
 
 
-    def patchContract ( token , props , profileDetails , apiId , contractId , payload )
+    def patchCall ( token , payload , pth )
     
     {
     
-        log ( INFO , " start Patch Contracts " ) 
-        def request = new JsonSlurper().parseText(payload)
-        def message = JsonOutput.toJson(request)
-        log(INFO, "PostContract request message=" + message)
-        
-        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId+"/contracts/"+contractId
-        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
-        def connection = doRESTHTTPCall(urlString, "PATCH", message, headers)
-        
-        
-        if ( connection.responseCode =~ '2..') 
-        {
-          log(INFO, " Contract Patched successfully. statusCode=${connection.responseCode}")
-            
-        }
-        else {
-        
-            throw new Exception("Failed to patch the contract : ${appId} ! statusCode=${connection.responseCode} ")
-        }
-        
-        log ( INFO , " end PatchContract " ) 
+                           log ( INFO , "Start Patch call ")
+                           def py = new JsonSlurper().parseText(payload)
+                           def msg =  JsonOutput.toJson(py)
+                           log ( INFO , "message for the patch call : " + msg )
+                           def rest = new RESTClient("https://anypoint.mulesoft.com/")
+                           def auth = "Bearer "+token
+                           log( INFO , "Path for the patch call : " + pth )
+                           def res = rest.patch( path : pth , headers : [ Authorization : auth ]  , body : msg , requestContentType : 'application/json' )
+                           
+                           log( INFO , "Response Status : " + res.status )
+                           log( INFO , "Response Status : " + res.data )
+                           log ( INFO , "End Patch call ")
     }
     
     def deleteContract ( token , props , profileDetails , apiId , contractId )
@@ -673,6 +681,30 @@ class CICDUtil
         log ( INFO , " end Get Contracts " ) 
         
         return contracts
+    }
+ 
+     def deleteApi ( token , profileDetails , apiId )
+    
+    {
+    
+        log ( INFO , " start Delete API " ) 
+       
+        def urlString = "https://anypoint.mulesoft.com/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId + "/apis/"+apiId
+        def headers=["Content-Type":"application/json", "Authorization": "Bearer " + token ]
+        def connection = doRESTHTTPCall(urlString, "DELETE", null, headers)
+        
+        
+        if ( connection.responseCode =~ '2..') 
+        {
+          log(INFO, " API Deleted successfully. statusCode=${connection.responseCode}")
+            
+        }
+        else {
+        
+            throw new Exception("Failed to delete the API : ${apiId} ! statusCode=${connection.responseCode} ")
+        }
+        
+        log ( INFO , " end Delete API " ) 
     }
 
     static def doRESTHTTPCall(urlString, method, payload, headers)
