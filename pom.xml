@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>3052a977-6a7c-4150-b5b7-9b592f688e38</groupId>
+	<groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
 	<artifactId>test-asset-version-app</artifactId>
     <version>1.0.0</version>
 	<!-- test -->
@@ -227,7 +227,7 @@
     	<repository>
     		<id>Repository</id>
 			<name>Corporate Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/3052a977-6a7c-4150-b5b7-9b592f688e38/maven</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/9cbfeea6-3931-4b24-b763-135be8eff827/maven</url>
 			<layout>default</layout>
     	</repository>
 	</distributionManagement>	
