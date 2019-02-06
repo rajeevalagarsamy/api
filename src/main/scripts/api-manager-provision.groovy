@@ -81,7 +81,7 @@ class CICDUtil
     def init ()
     {
 
-   
+  
               
         def props = ['username':System.properties.'anypoint.username', 
                      'password': System.properties.'anypoint.password',
@@ -320,12 +320,12 @@ class CICDUtil
                 log(INFO, it)
                 
                
-                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version )
+                if (it.environmentId == profileDetails.envId && it.productAPIVersion == props.version && it.name == props.apiInstanceLabel  )
                 
                 { 
                    log(INFO, "Env and API Version Matched" )        
                    
-                  if (it.version == props.assetVersion && it.name == props.apiInstanceLabel  ){
+                  if (it.version == props.assetVersion ){
                     
                     apiInstance = it;
                     apiDiscoveryName = "groupId:"+profileDetails.orgId+":assetId:"+ props.assetId
@@ -335,9 +335,21 @@ class CICDUtil
                     log ( INFO , "This API Instance matched with the ArtifactID , ArtifactVersion & APIVersion provided : " + apiInstance )
                   }
                   else if ( it.version == props.previousAssetVersion )  {
-                    log(INFO, "Previous Asset Version Details Captured" )   
-                    apiVerChange = "true"
-                    oldApiId = it.id
+                  
+
+                        apiInstance = it;
+                        apiDiscoveryName = "groupId:"+profileDetails.orgId+":assetId:"+ props.assetId
+                        apiDiscoveryVersion = apiInstance.name
+                        apiDiscoveryId = apiInstance.id
+                        log(INFO, "This API Instance matched with previous version" )   
+                        log(INFO, " Updating the API Instance with the Asset Version " )   
+                        
+                        def payload = '{ "assetVersion" : "'+props.assetVersion+'"}' 
+                        def pth = "/apimanager/api/v1/organizations/"+profileDetails.orgId+"/environments/"+profileDetails.envId+"/apis/"+apiDiscoveryId
+                        patchCall ( token , payload , pth )
+                        
+                        
+                        
                   }
                   
                   

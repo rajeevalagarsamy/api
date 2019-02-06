@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
 	<groupId>9cbfeea6-3931-4b24-b763-135be8eff827</groupId>
 	<artifactId>test-asset-version-app</artifactId>
     <version>1.0.0</version>
     <packaging>${packaging}</packaging>
-	<!-- test -->
 	<name>test-asset-version-app</name>
     <properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<mule.tools.version>1.2</mule.tools.version>
 		<app.runtime>4.1.4</app.runtime>
-		<mule.maven.plugin.version>3.2.3</mule.maven.plugin.version>
+		<mule.maven.plugin.version>3.2.7-SNAPSHOT</mule.maven.plugin.version>
 		<munit.version>2.1.4</munit.version>
 		<mule.munit.support.version>3.9.1</mule.munit.support.version>
 	</properties>
@@ -150,8 +148,6 @@
 			</build>
 		</profile>
 	</profiles> 
-	
-
 	<dependencies>
         <dependency>
             <groupId>org.mule.connectors</groupId>
@@ -186,7 +182,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 	<repositories>
           <repository>
             <id>anypoint-exchange</id>
@@ -214,7 +209,7 @@
             <layout>default</layout>
             <url>https://repository.mulesoft.org/releases/</url>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>ture</enabled>
             </snapshots>
         </pluginRepository>
       <pluginRepository>
@@ -222,6 +217,9 @@
           <name>mulesoft snapshot repository</name>
           <layout>default</layout>
           <url>https://repository.mulesoft.org/snapshots/</url>
+		  <snapshots>
+               <enabled>true</enabled>
+          </snapshots>
       </pluginRepository>
     </pluginRepositories>
 	<distributionManagement> 
