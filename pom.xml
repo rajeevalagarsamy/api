@@ -126,7 +126,6 @@
 								<password>${password}</password>
 								<applicationName>${application}-${version}</applicationName>
 								<provider>${provider}</provider>
-								<skipDeploymentVerification>true</skipDeploymentVerification>
 								<properties>
 									<env>${env}</env>
 									<api.id>${apiId}</api.id>
