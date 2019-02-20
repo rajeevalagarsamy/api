@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>3052a977-6a7c-4150-b5b7-9b592f688e38</groupId>
 	<artifactId>test-asset-version-app</artifactId>
-	<!-- test trigger -->
     <version>1.0.0</version>
     <packaging>${packaging}</packaging>
 	<name>test-asset-version-app</name>
